@@ -7,6 +7,10 @@ public class Slingshot : MonoBehaviour
 {
     [Header("Inscribed")]
     public GameObject projectilePrefab;
+    
+    public GameObject heavyProjectilePrefab;
+    public bool useHeavyProjectile = false;
+
     public float velocityMult = 10f;
     
 public GameObject projLinePrefab;
@@ -35,29 +39,63 @@ public GameObject projLinePrefab;
         launchPoint.SetActive(false);
     }
 
-    void OnMouseDown()
+    
+
+void OnMouseDown()
+{
+    // select the current ammunition
+    GameObject selectedPrefab = useHeavyProjectile
+        ? heavyProjectilePrefab
+        : projectilePrefab;
+
+    if (selectedPrefab == null)
     {
-        aimingMode = true;
-
-        projectile = Instantiate(projectilePrefab) as GameObject;
-        projectile.transform.position = launchPos;
-
-        projectile.GetComponent<Rigidbody>().isKinematic = true;
+        Debug.LogError("Projectile prefab is missing!");
+        return;
     }
+
+    aimingMode = true;
+
+    // create selected projectile
+    projectile = Instantiate(selectedPrefab);
+    projectile.transform.position = launchPos;
+
+    // hold projectile while aiming
+    projectile.GetComponent<Rigidbody>().isKinematic = true;
+}
+
 
     void Update()
     {
+
+        
+    // allow ammunition switching only when not aiming
+    if (!aimingMode)
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            useHeavyProjectile = false;
+            Debug.Log("Selected Normal Projectile");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            useHeavyProjectile = true;
+            Debug.Log("Selected Heavy Projectile");
+        }
+    }
+
         if (!aimingMode) return;
 
-        // Get mouse position in world coordinates
+        // get mouse position in world coordinates
         Vector3 mousePos2D = Input.mousePosition;
         mousePos2D.z = -Camera.main.transform.position.z;
         Vector3 mousePos3D = Camera.main.ScreenToWorldPoint(mousePos2D);
 
-        // Calculate distance from launch point
+        // calculate distance from launch point
         Vector3 mouseDelta = mousePos3D - launchPos;
 
-        // Limit how far the projectile can be pulled
+        // limit how far the projectile can be pulled
         float maxMagnitude = GetComponent<SphereCollider>().radius;
 
         if (mouseDelta.magnitude > maxMagnitude)
