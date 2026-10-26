@@ -8,6 +8,8 @@ public class Slingshot : MonoBehaviour
     [Header("Inscribed")]
     public GameObject projectilePrefab;
     public float velocityMult = 10f;
+    
+public GameObject projLinePrefab;
 
     [Header("Dynamic")]
     public GameObject launchPoint;
@@ -83,9 +85,30 @@ public class Slingshot : MonoBehaviour
             projRB.velocity = -mouseDelta * velocityMult;
 #endif
 
+
+
+FollowCam.SWITCH_VIEW(FollowCam.eView.slingshot);
+
 FollowCam.POI = projectile;
 
-            projectile = null;
+Instantiate<GameObject>(
+    projLinePrefab,
+    projectile.transform
+);
+
+projectile = null;
+
+MissionDemolition.SHOT_FIRED();
+
+
+AudioSource shotAudio = GetComponent<AudioSource>();
+
+if (shotAudio != null)
+{
+    shotAudio.Play();
+}
+
+
         }
     }
 }
